@@ -1,7 +1,7 @@
-﻿from jinja2 import nodes
+# -- encoding: UTF-8 --
+from jinja2 import nodes
 from jinja2.ext import Extension
 from jinja2.exceptions import TemplateSyntaxError
-from jinja2 import Markup
 from django.conf import settings
 
 
@@ -19,7 +19,7 @@ class LoadExtension(Extension):
 
     def parse(self, parser):
         while not parser.stream.current.type == 'block_end':
-            parser.stream.next()
+            next(parser.stream)
         return []
 
 
@@ -123,7 +123,7 @@ class URLExtension(Extension):
     def parse(self, parser):
         stream = parser.stream
 
-        tag = stream.next()
+        tag = next(stream)
 
         # get view name
         if stream.current.test('string'):
@@ -136,7 +136,7 @@ class URLExtension(Extension):
             # token, we do so ourselves, and let parse_expression() handle all
             # other cases.
             if stream.look().test('string'):
-                token = stream.next()
+                token = next(stream)
                 viewname = nodes.Const(token.value, lineno=token.lineno)
             else:
                 viewname = parser.parse_expression()
@@ -146,10 +146,10 @@ class URLExtension(Extension):
             name_allowed = True
             while True:
                 if stream.current.test_any('dot', 'sub', 'colon'):
-                    bits.append(stream.next())
+                    bits.append(next(stream))
                     name_allowed = True
                 elif stream.current.test('name') and name_allowed:
-                    bits.append(stream.next())
+                    bits.append(next(stream))
                     name_allowed = False
                 else:
                     break
@@ -165,7 +165,7 @@ class URLExtension(Extension):
             if args or kwargs:
                 stream.expect('comma')
             if stream.current.test('name') and stream.look().test('assign'):
-                key = nodes.Const(stream.next().value)
+                key = nodes.Const(next(stream).value)
                 stream.skip()
                 value = parser.parse_expression()
                 kwargs.append(nodes.Pair(key, value, lineno=key.lineno))
@@ -236,7 +236,7 @@ class WithExtension(Extension):
     tags = set(['with'])
 
     def parse(self, parser):
-        lineno = parser.stream.next().lineno
+        lineno = next(parser.stream).lineno
         value = parser.parse_expression()
         parser.stream.expect('name:as')
         name = parser.stream.expect('name')
@@ -262,7 +262,7 @@ class SpacelessExtension(Extension):
     tags = set(['spaceless'])
 
     def parse(self, parser):
-        lineno = parser.stream.next().lineno
+        lineno = next(parser.stream).lineno
         body = parser.parse_statements(['name:endspaceless'], drop_needle=True)
         return nodes.CallBlock(
             self.call_method('_strip_spaces', [], [], None, None),

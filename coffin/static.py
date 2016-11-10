@@ -12,7 +12,7 @@ class PrefixExtension(Extension):
 
     def parse(self, parser):
         stream = parser.stream
-        lineno = stream.next().lineno
+        lineno = next(stream).lineno
 
         call_node = self.call_method('render')
 
@@ -101,7 +101,7 @@ class StaticExtension(PrefixExtension):
 
     def parse(self, parser):
         stream = parser.stream
-        lineno = stream.next().lineno
+        lineno = next(stream).lineno
 
         path = parser.parse_expression()
         call_node = self.call_method('get_statc_url', args=[path])
