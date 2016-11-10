@@ -18,7 +18,7 @@ General notes:
 """
 
 import inspect
-from django.utils.safestring import SafeUnicode, SafeData, EscapeData
+from django.utils.safestring import SafeData, EscapeData
 from jinja2 import Markup, environmentfilter, Undefined
 
 
