@@ -196,20 +196,13 @@ class URLExtension(Extension):
 
         current_app = self._get_current_app(context)
 
-        # Try to look up the URL twice: once given the view name,
-        # and again relative to what we guess is the "main" app.
         urlconf = kwargs.pop('urlconf', None)
         try:
             return reverse(viewname, urlconf=urlconf, args=args, kwargs=kwargs, current_app=current_app)
-        except NoReverseMatch as ex:
-            projectname = settings.SETTINGS_MODULE.split('.')[0]
-            try:
-                url = reverse(projectname + '.' + viewname, urlconf=urlconf, args=args, kwargs=kwargs)
-            except NoReverseMatch:
-                if fail:
-                    raise ex
-                else:
-                    return ''
+        except NoReverseMatch:
+            if fail:
+                raise
+            return ''
         return url
 
     @classmethod
