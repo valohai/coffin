@@ -11,5 +11,5 @@ def sum(request):
 
 urlpatterns = [
     url(r'^$', index, name='the-index-view'),
-    url(r'^sum/(?P<left>\d+),(?P<right>\d+)$', sum),
+    url(r'^sum/(?P<left>\d+),(?P<right>\d+)$', sum, name='sum'),
 ]
