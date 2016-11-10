@@ -77,7 +77,7 @@ class GetMediaPrefixExtension(PrefixExtension):
     tags = set(['get_media_prefix'])
 
     def render(self):
-        return self.get_uri_setting('STATIC_URL')
+        return self.get_uri_setting('MEDIA_URL')
 
 
 class StaticExtension(PrefixExtension):

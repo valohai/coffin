@@ -28,3 +28,4 @@ TEMPLATES = [
 
 STATIC_ROOT = os.path.join(os.path.dirname(__file__), 'static')
 STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
