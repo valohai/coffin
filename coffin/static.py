@@ -104,7 +104,7 @@ class StaticExtension(PrefixExtension):
         lineno = next(stream).lineno
 
         path = parser.parse_expression()
-        call_node = self.call_method('get_statc_url', args=[path])
+        call_node = self.call_method('get_static_url', args=[path])
 
         if stream.next_if('name:as'):
             var = nodes.Name(stream.expect('name').value, 'store')
@@ -113,5 +113,5 @@ class StaticExtension(PrefixExtension):
             return nodes.Output([call_node]).set_lineno(lineno)
 
     @classmethod
-    def get_statc_url(cls, path):
+    def get_static_url(cls, path):
         return urljoin(PrefixExtension.get_uri_setting("STATIC_URL"), path)
