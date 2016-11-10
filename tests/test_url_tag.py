@@ -53,12 +53,16 @@ def test_url(template, context, expected_result):
         assert actual_result == expected_result
 
 
-@pytest.mark.skip
 def test_url_current_app():
     """Test that the url can deal with the current_app context setting."""
-    from coffin.template.loader import get_template_from_string
-    from django.template import RequestContext
+    from django.template import engines
     from django.http import HttpRequest
-    t = get_template_from_string('{% url testapp:the-index-view %}')
-    assert t.render(RequestContext(HttpRequest())) == '/app/one/'
-    assert t.render(RequestContext(HttpRequest(), current_app="two")) == '/app/two/'
+    t = engines['jinja2'].from_string('{% url testapp:the-index-view %}')
+    assert t.render(request=HttpRequest()) == '/app/one/'
+    request = HttpRequest()
+    request.current_app = "two"
+    assert t.render(request=request) == '/app/two/'
+
+    request = HttpRequest()
+    request.current_app = "three"  # nonexistent
+    assert t.render(request=request) == '/app/one/'

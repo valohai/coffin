@@ -177,7 +177,7 @@ class URLExtension(Extension):
                 viewname,
                 nodes.List(args),
                 nodes.Dict(kwargs),
-                nodes.Name('_current_app', 'load'),
+                nodes.ContextReference(),
             ], kwargs=kw)
 
         # if an as-clause is specified, write the result to context...
@@ -191,28 +191,42 @@ class URLExtension(Extension):
             return nodes.Output([make_call_node()]).set_lineno(tag.lineno)
 
     @classmethod
-    def _reverse(self, viewname, args, kwargs, current_app=None, fail=True):
+    def _reverse(self, viewname, args, kwargs, context=None, fail=True):
         from django.core.urlresolvers import reverse, NoReverseMatch
+
+        current_app = self._get_current_app(context)
 
         # Try to look up the URL twice: once given the view name,
         # and again relative to what we guess is the "main" app.
-        url = ''
-        urlconf=kwargs.pop('urlconf', None)
+        urlconf = kwargs.pop('urlconf', None)
         try:
-            url = reverse(viewname, urlconf=urlconf, args=args, kwargs=kwargs,
-                current_app=current_app)
+            return reverse(viewname, urlconf=urlconf, args=args, kwargs=kwargs, current_app=current_app)
         except NoReverseMatch as ex:
             projectname = settings.SETTINGS_MODULE.split('.')[0]
             try:
-                url = reverse(projectname + '.' + viewname, urlconf=urlconf, 
-                              args=args, kwargs=kwargs)
+                url = reverse(projectname + '.' + viewname, urlconf=urlconf, args=args, kwargs=kwargs)
             except NoReverseMatch:
                 if fail:
                     raise ex
                 else:
                     return ''
-
         return url
+
+    @classmethod
+    def _get_current_app(cls, context):
+        # Pilfered from URLNode in Django's template engine
+        current_app = None
+        try:
+            current_app = context['request'].current_app
+        except KeyError:  # no request? :(
+            pass
+        except AttributeError:
+            try:
+                current_app = context['request'].resolver_match.namespace
+            except AttributeError:
+                pass
+
+        return current_app
 
 
 class WithExtension(Extension):

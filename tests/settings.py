@@ -13,6 +13,7 @@ ROOT_URLCONF = 'tests.urls'
 
 TEMPLATES = [
     {
+        "NAME": "jinja2",
         "BACKEND": "django_jinja.backend.Jinja2",
         "APP_DIRS": True,
         "OPTIONS": {
