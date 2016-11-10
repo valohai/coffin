@@ -1,3 +1,5 @@
+import os
+
 from django_jinja.builtins import DEFAULT_EXTENSIONS
 
 from coffin import COFFIN_EXTENSIONS
@@ -5,6 +7,7 @@ from coffin import COFFIN_EXTENSIONS
 SECRET_KEY = 'We have no secrets.'
 
 INSTALLED_APPS = (
+    'django.contrib.staticfiles',
     'django_jinja',
     'coffin',
 )
@@ -22,3 +25,6 @@ TEMPLATES = [
         },
     },
 ]
+
+STATIC_ROOT = os.path.join(os.path.dirname(__file__), 'static')
+STATIC_URL = '/static/'
