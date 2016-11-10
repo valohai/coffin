@@ -1,7 +1,7 @@
+from django.template.defaultfilters import upper, urlize
 from jinja2 import Environment
 
 from coffin.interop import django_filter_to_jinja2
-from django.template.defaultfilters import urlize, upper
 
 
 def test_django_to_jinja():

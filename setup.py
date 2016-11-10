@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import os
-from setuptools import setup, find_packages
-
-
 import re
+
+from setuptools import find_packages, setup
+
 here = os.path.dirname(os.path.abspath(__file__))
 version_re = re.compile(
     r'__version__ = (\(.*?\))')

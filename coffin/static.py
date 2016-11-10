@@ -3,9 +3,9 @@ try:
 except ImportError:     # Python 2
     from urlparse import urljoin
 
-from jinja2.ext import Extension
-from jinja2 import nodes
 from django.utils.encoding import iri_to_uri
+from jinja2 import nodes
+from jinja2.ext import Extension
 
 
 class PrefixExtension(Extension):

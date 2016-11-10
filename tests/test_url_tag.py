@@ -1,8 +1,8 @@
-from __future__ import unicode_literals, print_function
+from __future__ import print_function, unicode_literals
 
 import pytest
 from django.core.urlresolvers import NoReverseMatch
-from jinja2 import TemplateSyntaxError, Environment
+from jinja2 import Environment, TemplateSyntaxError
 
 from coffin import URLExtension
 
@@ -46,7 +46,7 @@ def test_url(template, context, expected_result):
         actual_result = env.from_string(template).render(context)
     except Exception as e:
         print('==> %s: (%s)' % (type(e), e))
-        assert type(e) == expected_result
+        assert isinstance(e, expected_result)
     else:
         print('==> %s' % actual_result)
         assert actual_result == expected_result

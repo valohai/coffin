@@ -1,8 +1,8 @@
 # -- encoding: UTF-8 --
-from jinja2 import nodes
-from jinja2.ext import Extension
-from jinja2.exceptions import TemplateSyntaxError
 from django.conf import settings
+from jinja2 import nodes
+from jinja2.exceptions import TemplateSyntaxError
+from jinja2.ext import Extension
 
 
 class LoadExtension(Extension):
@@ -155,8 +155,7 @@ class URLExtension(Extension):
                     break
             viewname = nodes.Const("".join([b.value for b in bits]))
             if not bits:
-                raise TemplateSyntaxError("'%s' requires path to view" %
-                    tag.value, tag.lineno)
+                raise TemplateSyntaxError("'%s' requires path to view" % tag.value, tag.lineno)
 
         # get arguments
         args = []
@@ -183,8 +182,7 @@ class URLExtension(Extension):
         # if an as-clause is specified, write the result to context...
         if stream.next_if('name:as'):
             var = nodes.Name(stream.expect('name').value, 'store')
-            call_node = make_call_node(nodes.Keyword('fail',
-                nodes.Const(False)))
+            call_node = make_call_node(nodes.Keyword('fail', nodes.Const(False)))
             return nodes.Assign(var, call_node)
         # ...otherwise print it out.
         else:
@@ -251,9 +249,9 @@ class WithExtension(Extension):
         # Use a local variable instead of a macro argument to alias
         # the expression.  This allows us to nest "with" statements.
         body.insert(0, nodes.Assign(nodes.Name(name.value, 'store'), value))
-        return nodes.CallBlock(
-                self.call_method('_render_block'), [], [], body).\
-                    set_lineno(lineno)
+        node = nodes.CallBlock(self.call_method('_render_block'), [], [], body)
+        node.set_lineno(lineno)
+        return node
 
     def _render_block(self, caller=None):
         return caller()

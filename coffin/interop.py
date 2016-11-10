@@ -18,9 +18,9 @@ General notes:
 """
 
 import inspect
-from django.utils.safestring import SafeData, EscapeData
-from jinja2 import Markup, environmentfilter, Undefined
 
+from django.utils.safestring import EscapeData, SafeData
+from jinja2 import environmentfilter, Markup, Undefined
 
 __all__ = (
     'DJANGO', 'JINJA2',
@@ -49,6 +49,7 @@ def django_filter_to_jinja2(filter_func):
         if isinstance(v, EscapeData):
             return Markup.escape(v)       # not 100% equivalent, see mod docs
         return v
+
     def _convert_in(v):
         if isinstance(v, Undefined):
             # Essentially the TEMPLATE_STRING_IF_INVALID default
@@ -57,6 +58,7 @@ def django_filter_to_jinja2(filter_func):
             # simulate in Jinja.
             return ''
         return v
+
     def conversion_wrapper(value, *args, **kwargs):
         result = filter_func(_convert_in(value), *args, **kwargs)
         return _convert_out(result)
@@ -84,14 +86,16 @@ def jinja2_filter_to_django(filter_func):
     """
     if guess_filter_type(filter_func)[0] == DJANGO:
         return filter_func
+
     def _convert(v):
         # TODO: for now, this is not even necessary: Markup strings have
         # a custom replace() method that is immume to Django's escape()
         # attempts.
-        #if isinstance(v, Markup):
+        # if isinstance(v, Markup):
         #    return SafeUnicode(v)         # jinja is always unicode
         # ... Jinja does not have a EscapeData equivalent
         return v
+
     def wrapped(value, *args, **kwargs):
         result = filter_func(value, *args, **kwargs)
         return _convert(result)
@@ -114,7 +118,7 @@ def guess_filter_type(filter_func):
     """
     if hasattr(filter_func, 'contextfilter') or \
        hasattr(filter_func, 'environmentfilter'):
-            return JINJA2, False
+        return JINJA2, False
 
     args = inspect.getargspec(filter_func)
     if len(args[0]) - (len(args[3]) if args[3] else 0) > 2:

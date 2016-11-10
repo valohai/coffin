@@ -1,7 +1,11 @@
 import pytest
 from jinja2 import Environment
 
-from coffin.static import StaticExtension, GetStaticPrefixExtension, GetMediaPrefixExtension
+from coffin.static import (
+    GetMediaPrefixExtension,
+    GetStaticPrefixExtension,
+    StaticExtension
+)
 from coffin.staticfiles import StaticExtension as StaticFilesExtension
 
 

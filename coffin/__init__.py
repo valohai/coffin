@@ -1,20 +1,19 @@
 __version__ = (2, 0, '0')
 
 from coffin.common import (
-    LoadExtension,
-    URLExtension,
-    WithExtension,
-    SpacelessExtension,
     load,
-    url,
-    with_,
+    LoadExtension,
     spaceless,
+    SpacelessExtension,
+    url,
+    URLExtension,
+    with_,
+    WithExtension
 )
-
 from coffin.static import (
-    StaticExtension,
-    GetStaticPrefixExtension,
     GetMediaPrefixExtension,
+    GetStaticPrefixExtension,
+    StaticExtension
 )
 
 COFFIN_EXTENSIONS = [
