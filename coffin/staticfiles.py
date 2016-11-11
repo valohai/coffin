@@ -1,4 +1,5 @@
 from django.contrib.staticfiles.storage import staticfiles_storage
+
 from coffin.static import StaticExtension
 
 
@@ -22,6 +23,5 @@ class StaticExtension(StaticExtension):
     """
 
     @classmethod
-    def get_statc_url(cls, path):
-        return super(StaticExtension, cls).get_statc_url(
-            staticfiles_storage.url(path))
+    def get_static_url(cls, path):
+        return super(StaticExtension, cls).get_static_url(staticfiles_storage.url(path))

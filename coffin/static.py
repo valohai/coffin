@@ -3,16 +3,16 @@ try:
 except ImportError:     # Python 2
     from urlparse import urljoin
 
-from jinja2.ext import Extension
-from jinja2 import nodes
 from django.utils.encoding import iri_to_uri
+from jinja2 import nodes
+from jinja2.ext import Extension
 
 
 class PrefixExtension(Extension):
 
     def parse(self, parser):
         stream = parser.stream
-        lineno = stream.next().lineno
+        lineno = next(stream).lineno
 
         call_node = self.call_method('render')
 
@@ -77,7 +77,7 @@ class GetMediaPrefixExtension(PrefixExtension):
     tags = set(['get_media_prefix'])
 
     def render(self):
-        return self.get_uri_setting('STATIC_URL')
+        return self.get_uri_setting('MEDIA_URL')
 
 
 class StaticExtension(PrefixExtension):
@@ -101,10 +101,10 @@ class StaticExtension(PrefixExtension):
 
     def parse(self, parser):
         stream = parser.stream
-        lineno = stream.next().lineno
+        lineno = next(stream).lineno
 
         path = parser.parse_expression()
-        call_node = self.call_method('get_statc_url', args=[path])
+        call_node = self.call_method('get_static_url', args=[path])
 
         if stream.next_if('name:as'):
             var = nodes.Name(stream.expect('name').value, 'store')
@@ -113,5 +113,5 @@ class StaticExtension(PrefixExtension):
             return nodes.Output([call_node]).set_lineno(lineno)
 
     @classmethod
-    def get_statc_url(cls, path):
+    def get_static_url(cls, path):
         return urljoin(PrefixExtension.get_uri_setting("STATIC_URL"), path)

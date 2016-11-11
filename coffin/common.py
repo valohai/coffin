@@ -1,8 +1,8 @@
-﻿from jinja2 import nodes
-from jinja2.ext import Extension
-from jinja2.exceptions import TemplateSyntaxError
-from jinja2 import Markup
+# -- encoding: UTF-8 --
 from django.conf import settings
+from jinja2 import nodes
+from jinja2.exceptions import TemplateSyntaxError
+from jinja2.ext import Extension
 
 
 class LoadExtension(Extension):
@@ -19,7 +19,7 @@ class LoadExtension(Extension):
 
     def parse(self, parser):
         while not parser.stream.current.type == 'block_end':
-            parser.stream.next()
+            next(parser.stream)
         return []
 
 
@@ -123,7 +123,7 @@ class URLExtension(Extension):
     def parse(self, parser):
         stream = parser.stream
 
-        tag = stream.next()
+        tag = next(stream)
 
         # get view name
         if stream.current.test('string'):
@@ -136,7 +136,7 @@ class URLExtension(Extension):
             # token, we do so ourselves, and let parse_expression() handle all
             # other cases.
             if stream.look().test('string'):
-                token = stream.next()
+                token = next(stream)
                 viewname = nodes.Const(token.value, lineno=token.lineno)
             else:
                 viewname = parser.parse_expression()
@@ -146,17 +146,16 @@ class URLExtension(Extension):
             name_allowed = True
             while True:
                 if stream.current.test_any('dot', 'sub', 'colon'):
-                    bits.append(stream.next())
+                    bits.append(next(stream))
                     name_allowed = True
                 elif stream.current.test('name') and name_allowed:
-                    bits.append(stream.next())
+                    bits.append(next(stream))
                     name_allowed = False
                 else:
                     break
             viewname = nodes.Const("".join([b.value for b in bits]))
             if not bits:
-                raise TemplateSyntaxError("'%s' requires path to view" %
-                    tag.value, tag.lineno)
+                raise TemplateSyntaxError("'%s' requires path to view" % tag.value, tag.lineno)
 
         # get arguments
         args = []
@@ -165,7 +164,7 @@ class URLExtension(Extension):
             if args or kwargs:
                 stream.expect('comma')
             if stream.current.test('name') and stream.look().test('assign'):
-                key = nodes.Const(stream.next().value)
+                key = nodes.Const(next(stream).value)
                 stream.skip()
                 value = parser.parse_expression()
                 kwargs.append(nodes.Pair(key, value, lineno=key.lineno))
@@ -177,42 +176,48 @@ class URLExtension(Extension):
                 viewname,
                 nodes.List(args),
                 nodes.Dict(kwargs),
-                nodes.Name('_current_app', 'load'),
+                nodes.ContextReference(),
             ], kwargs=kw)
 
         # if an as-clause is specified, write the result to context...
         if stream.next_if('name:as'):
             var = nodes.Name(stream.expect('name').value, 'store')
-            call_node = make_call_node(nodes.Keyword('fail',
-                nodes.Const(False)))
+            call_node = make_call_node(nodes.Keyword('fail', nodes.Const(False)))
             return nodes.Assign(var, call_node)
         # ...otherwise print it out.
         else:
             return nodes.Output([make_call_node()]).set_lineno(tag.lineno)
 
     @classmethod
-    def _reverse(self, viewname, args, kwargs, current_app=None, fail=True):
+    def _reverse(self, viewname, args, kwargs, context=None, fail=True):
         from django.core.urlresolvers import reverse, NoReverseMatch
 
-        # Try to look up the URL twice: once given the view name,
-        # and again relative to what we guess is the "main" app.
-        url = ''
-        urlconf=kwargs.pop('urlconf', None)
-        try:
-            url = reverse(viewname, urlconf=urlconf, args=args, kwargs=kwargs,
-                current_app=current_app)
-        except NoReverseMatch as ex:
-            projectname = settings.SETTINGS_MODULE.split('.')[0]
-            try:
-                url = reverse(projectname + '.' + viewname, urlconf=urlconf, 
-                              args=args, kwargs=kwargs)
-            except NoReverseMatch:
-                if fail:
-                    raise ex
-                else:
-                    return ''
+        current_app = self._get_current_app(context)
 
+        urlconf = kwargs.pop('urlconf', None)
+        try:
+            return reverse(viewname, urlconf=urlconf, args=args, kwargs=kwargs, current_app=current_app)
+        except NoReverseMatch:
+            if fail:
+                raise
+            return ''
         return url
+
+    @classmethod
+    def _get_current_app(cls, context):
+        # Pilfered from URLNode in Django's template engine
+        current_app = None
+        try:
+            current_app = context['request'].current_app
+        except KeyError:  # no request? :(
+            pass
+        except AttributeError:
+            try:
+                current_app = context['request'].resolver_match.namespace
+            except AttributeError:
+                pass
+
+        return current_app
 
 
 class WithExtension(Extension):
@@ -236,7 +241,7 @@ class WithExtension(Extension):
     tags = set(['with'])
 
     def parse(self, parser):
-        lineno = parser.stream.next().lineno
+        lineno = next(parser.stream).lineno
         value = parser.parse_expression()
         parser.stream.expect('name:as')
         name = parser.stream.expect('name')
@@ -244,9 +249,9 @@ class WithExtension(Extension):
         # Use a local variable instead of a macro argument to alias
         # the expression.  This allows us to nest "with" statements.
         body.insert(0, nodes.Assign(nodes.Name(name.value, 'store'), value))
-        return nodes.CallBlock(
-                self.call_method('_render_block'), [], [], body).\
-                    set_lineno(lineno)
+        node = nodes.CallBlock(self.call_method('_render_block'), [], [], body)
+        node.set_lineno(lineno)
+        return node
 
     def _render_block(self, caller=None):
         return caller()
@@ -262,7 +267,7 @@ class SpacelessExtension(Extension):
     tags = set(['spaceless'])
 
     def parse(self, parser):
-        lineno = parser.stream.next().lineno
+        lineno = next(parser.stream).lineno
         body = parser.parse_statements(['name:endspaceless'], drop_needle=True)
         return nodes.CallBlock(
             self.call_method('_strip_spaces', [], [], None, None),

@@ -1,7 +1,11 @@
+*.egg-info
 *.pyc
-/build
-.bzr*
-Coffin.egg-info
-/dist
 .*.swp
+.bzr*
+.cache
+.coverage
+.tox
+/build
+/dist
 /docs/_build
+htmlcov
